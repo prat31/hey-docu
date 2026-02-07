@@ -10,6 +10,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 export function Sidebar({ refreshTrigger, onUploadComplete, onFileDelete, systemStatus }) {
     const [files, setFiles] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [deletingId, setDeletingId] = useState(null);
 
     useEffect(() => {
         fetchFiles();
@@ -24,9 +25,22 @@ export function Sidebar({ refreshTrigger, onUploadComplete, onFileDelete, system
         }
     };
 
+    const handleDeleteClick = (filename) => {
+        if (deletingId === filename) {
+            // Actually delete
+            deleteFile(filename);
+        } else {
+            // Show confirmation
+            setDeletingId(filename);
+            // Reset confirmation after 3 seconds
+            setTimeout(() => setDeletingId(null), 3000);
+        }
+    };
+
     const deleteFile = async (filename) => {
-        if (!confirm(`Are you sure you want to delete ${filename}?`)) return;
         setLoading(true);
+        // Clear confirming state
+        setDeletingId(null);
         try {
             await axios.delete(`${API_URL}/api/files/${filename}`);
             fetchFiles();
@@ -55,7 +69,9 @@ export function Sidebar({ refreshTrigger, onUploadComplete, onFileDelete, system
                     <div className="flex items-center gap-2 text-sm p-2 rounded-lg bg-background/50 border shadow-sm">
                         <Database size={14} className="text-green-500" />
                         <span className="font-medium">Qdrant</span>
-                        <span className="flex h-2 w-2 rounded-full bg-green-500 ml-auto animate-pulse" />
+                        <div className="ml-auto flex items-center gap-2">
+                            <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -88,11 +104,18 @@ export function Sidebar({ refreshTrigger, onUploadComplete, onFileDelete, system
                                         <span className="text-sm truncate" title={file}>{file}</span>
                                     </div>
                                     <button
-                                        onClick={() => deleteFile(file)}
+                                        onClick={() => handleDeleteClick(file)}
                                         disabled={loading}
-                                        className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-destructive transition-all"
+                                        className={cn(
+                                            "transition-all p-1 rounded-md",
+                                            deletingId === file
+                                                ? "bg-destructive text-destructive-foreground opacity-100"
+                                                : "opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive"
+                                        )}
+                                        title={deletingId === file ? "Click to confirm delete" : "Delete"}
                                     >
                                         <Trash2 size={14} />
+                                        {deletingId === file && <span className="ml-1 text-[10px] font-bold">Sure?</span>}
                                     </button>
                                 </motion.div>
                             ))

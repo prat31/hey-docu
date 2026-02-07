@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: Optional[str] = None
     OLLAMA_BASE_URL: Optional[str] = None
     OLLAMA_MODEL: str = "llama3"
+    OLLAMA_EMBED_MODEL: Optional[str] = None
+    DISABLE_HF_EMBEDDINGS: bool = False
 
     class Config:
         case_sensitive = True

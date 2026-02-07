@@ -1,10 +1,14 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks
-from app.worker import process_document_task, celery_app
-from app.services.rag import ask_question
+from fastapi import APIRouter, UploadFile, File, HTTPException
 from pydantic import BaseModel
 import shutil
 import os
 import uuid
+import redis
+from app.worker import process_document_task, celery_app
+from app.services.rag import ask_question
+from app.core.config import settings
+from app.services.vector_db import delete_document_by_name
+from app.services.llm import check_connection
 
 router = APIRouter()
 
@@ -17,7 +21,6 @@ class ChatResponse(BaseModel):
 @router.post("/upload")
 async def upload_document(file: UploadFile = File(...)):
     ALLOWED_EXTENSIONS = {'.txt', '.pdf', '.docx', '.md', '.csv'}
-    import os
     ext = os.path.splitext(file.filename)[1].lower()
 
     if ext not in ALLOWED_EXTENSIONS:
@@ -46,8 +49,6 @@ def get_task_status(task_id: str):
 @router.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     try:
-        import redis
-        from app.core.config import settings
         r = redis.Redis.from_url(settings.CELERY_BROKER_URL)
         if r.scard("ingested_files") == 0:
             return {"answer": "Please upload a document to start chatting with it."}
@@ -59,18 +60,12 @@ async def chat(request: ChatRequest):
 
 @router.get("/files")
 def list_files():
-    import redis
-    from app.core.config import settings
     r = redis.Redis.from_url(settings.CELERY_BROKER_URL)
     files = r.smembers("ingested_files")
     return {"files": [f.decode('utf-8') for f in files]}
 
 @router.delete("/files/{filename}")
 def delete_file(filename: str):
-    import redis
-    from app.core.config import settings
-    from app.services.vector_db import delete_document_by_name
-    
     try:
         delete_document_by_name(filename)
     except Exception as e:
@@ -83,9 +78,6 @@ def delete_file(filename: str):
 
 @router.get("/status")
 def get_system_status():
-    from app.core.config import settings
-    from app.services.llm import check_connection
-    
     is_online = check_connection()
     
     return {

@@ -1,6 +1,7 @@
 from celery import Celery
-from app.core.config import settings
 import os
+import redis
+from app.core.config import settings
 from app.services.ingestion import ingest_document
 
 celery_app = Celery(
@@ -25,7 +26,6 @@ def process_document_task(self, file_path: str, filename: str):
         if os.path.exists(file_path):
             os.remove(file_path)
             
-        import redis
         r = redis.Redis.from_url(settings.CELERY_BROKER_URL)
         r.sadd("ingested_files", filename)
 

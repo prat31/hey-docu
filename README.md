@@ -47,7 +47,15 @@ A modern, containerized RAG (Retrieval-Augmented Generation) Chat Application. U
     # For Local Ollama
     # LLM_PROVIDER=ollama
     # OLLAMA_BASE_URL=http://host.docker.internal:11434
+    # OLLAMA_BASE_URL=http://host.docker.internal:11434
+
+    # Embedding Configuration (Optional)
+    # Leave empty to use default HuggingFace embeddings (BAAI/bge-small-en-v1.5)
+    # OLLAMA_EMBED_MODEL=nomic-embed-text
+    # DISABLE_HF_EMBEDDINGS=True
     ```
+    
+    > **Privacy Note**: To ensure **local-only** operation, set `DISABLE_HF_EMBEDDINGS=True` and provide a valid `OLLAMA_EMBED_MODEL`. This prevents the application from connecting to Hugging Face or OpenAI.
 
 3.  **Local Python Setup (Optional)**
     If you want to run the backend locally or need IDE autocompletion:
@@ -62,7 +70,7 @@ A modern, containerized RAG (Retrieval-Augmented Generation) Chat Application. U
 4.  **Start Services**
     Build and run the containers:
     ```bash
-    docker-compose up --build
+    docker-compose up --build -d
     ```
 
 4.  **Access the Application**

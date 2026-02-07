@@ -2,6 +2,8 @@ from llama_index.core import Settings
 from llama_index.llms.openai import OpenAI
 from llama_index.llms.ollama import Ollama
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from llama_index.embeddings.ollama import OllamaEmbedding
+import requests
 from app.core.config import settings
 
 def get_llm():
@@ -18,13 +20,24 @@ def get_llm():
 
 def configure_llm():
     Settings.llm = get_llm()
-    Settings.embed_model = HuggingFaceEmbedding(
-        model_name="BAAI/bge-small-en-v1.5"
-    )
+    
+    # Check if a specific Ollama embedding model is requested
+    if settings.OLLAMA_EMBED_MODEL:
+        Settings.embed_model = OllamaEmbedding(
+            model_name=settings.OLLAMA_EMBED_MODEL,
+            base_url=settings.OLLAMA_BASE_URL
+        )
+    # If explicitly disabled, DO NOT fallback to HuggingFace
+    elif settings.DISABLE_HF_EMBEDDINGS:
+        raise ValueError("HuggingFace embeddings are disabled (DISABLE_HF_EMBEDDINGS=True) but no OLLAMA_EMBED_MODEL is set.")
+    else:
+        # Default fallback for convenience, connects to HF Hub once
+        Settings.embed_model = HuggingFaceEmbedding(
+            model_name="BAAI/bge-small-en-v1.5"
+        )
 
 def check_connection():
     try:
-        import requests
         if settings.LLM_PROVIDER == "ollama":
             # Simple check to Ollama API
             resp = requests.get(f"{settings.OLLAMA_BASE_URL}/api/tags", timeout=2)

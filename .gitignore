@@ -51,3 +51,6 @@ yarn-error.log*
 
 # Qdrant
 qdrant_storage/
+
+# Temp
+backend/temp_uploads/
