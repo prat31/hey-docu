@@ -18,8 +18,22 @@ def get_llm():
 
 def configure_llm():
     Settings.llm = get_llm()
-    # Use a local embedding model to save costs/latency or match Ollama
-    # allowing it to be self-hosted 
     Settings.embed_model = HuggingFaceEmbedding(
         model_name="BAAI/bge-small-en-v1.5"
     )
+
+def check_connection():
+    try:
+        import requests
+        if settings.LLM_PROVIDER == "ollama":
+            # Simple check to Ollama API
+            resp = requests.get(f"{settings.OLLAMA_BASE_URL}/api/tags", timeout=2)
+            return resp.status_code == 200
+        elif settings.LLM_PROVIDER == "openai":
+            # Simple check to OpenAI API (listing models)
+            headers = {"Authorization": f"Bearer {settings.OPENAI_API_KEY}"}
+            resp = requests.get("https://api.openai.com/v1/models", headers=headers, timeout=5)
+            return resp.status_code == 200
+        return False
+    except Exception:
+        return False

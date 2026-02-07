@@ -7,30 +7,20 @@ import { Upload } from './Upload';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-export function Sidebar({ refreshTrigger, onUploadComplete, onFileDelete }) {
+export function Sidebar({ refreshTrigger, onUploadComplete, onFileDelete, systemStatus }) {
     const [files, setFiles] = useState([]);
-    const [status, setStatus] = useState(null);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         fetchFiles();
-        fetchStatus();
     }, [refreshTrigger]);
 
     const fetchFiles = async () => {
         try {
-            const res = await axios.get(`${API_URL}/api/files`);
+            const res = await axios.get(`${API_URL}/api/files?t=${new Date().getTime()}`);
+            setFiles(res.data.files || []);
         } catch (e) {
             console.error("Failed to fetch files", e);
-        }
-    };
-
-    const fetchStatus = async () => {
-        try {
-            const res = await axios.get(`${API_URL}/api/status`);
-            setStatus(res.data);
-        } catch (e) {
-            console.error("Failed to fetch status", e);
         }
     };
 
@@ -56,8 +46,11 @@ export function Sidebar({ refreshTrigger, onUploadComplete, onFileDelete }) {
                 <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-2 text-sm p-2 rounded-lg bg-background/50 border shadow-sm">
                         <Cpu size={14} className="text-primary" />
-                        <span className="font-medium">{status?.llm_provider === 'openai' ? 'OpenAI' : 'Ollama'}</span>
-                        <span className="text-xs text-muted-foreground ml-auto">{status?.model}</span>
+                        <span className="font-medium">{systemStatus?.llm_provider === 'openai' ? 'OpenAI' : 'Ollama'}</span>
+                        <div className="ml-auto flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">{systemStatus?.model}</span>
+                            <span className={cn("flex h-2 w-2 rounded-full", systemStatus?.is_online ? "bg-green-500 animate-pulse" : "bg-destructive")} />
+                        </div>
                     </div>
                     <div className="flex items-center gap-2 text-sm p-2 rounded-lg bg-background/50 border shadow-sm">
                         <Database size={14} className="text-green-500" />

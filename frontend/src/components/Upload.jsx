@@ -36,9 +36,12 @@ export function Upload({ onUploadComplete }) {
     };
 
     const handleUpload = async (file) => {
-        if (!file.name.endsWith('.txt')) {
+        const validExtensions = ['.txt', '.pdf', '.docx', '.md', '.csv'];
+        const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+
+        if (!validExtensions.includes(fileExtension)) {
             setStatus('error');
-            setMessage('Only .txt files are supported.');
+            setMessage('Unsupported file type. Supported: .txt, .pdf, .docx, .md, .csv');
             return;
         }
 
@@ -109,7 +112,7 @@ export function Upload({ onUploadComplete }) {
                     type="file"
                     ref={fileInputRef}
                     onChange={handleChange}
-                    accept=".txt"
+                    accept=".txt, .pdf, .docx, .md, .csv"
                     className="hidden"
                 />
 
@@ -123,7 +126,7 @@ export function Upload({ onUploadComplete }) {
                             className="flex flex-col items-center gap-2 text-muted-foreground"
                         >
                             <UploadIcon className="w-8 h-8 group-hover:text-primary transition-colors" />
-                            <p className="text-sm font-medium">Drop TXT file here or click to upload</p>
+                            <p className="text-sm font-medium">Drop PDF, TXT, DOCX, CSV here</p>
                             {status === 'error' && <p className="text-xs text-destructive">{message}</p>}
                         </motion.div>
                     ) : status === 'success' ? (

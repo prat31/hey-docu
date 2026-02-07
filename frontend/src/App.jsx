@@ -4,10 +4,31 @@ import { Sidebar } from './components/Sidebar';
 import { ThemeToggle } from './components/ThemeToggle';
 import { Sparkles, Menu } from 'lucide-react';
 
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 function App() {
     const [refreshSidebar, setRefreshSidebar] = useState(0);
     const [showSidebar, setShowSidebar] = useState(false);
+    const [systemStatus, setSystemStatus] = useState(null);
     const chatRef = useRef(null);
+
+    React.useEffect(() => {
+        fetchStatus();
+        const interval = setInterval(fetchStatus, 30000); // Poll every 30s
+        return () => clearInterval(interval);
+    }, []);
+
+    const fetchStatus = async () => {
+        try {
+            const res = await axios.get(`${API_URL}/api/status?t=${new Date().getTime()}`);
+            setSystemStatus(res.data);
+        } catch (e) {
+            console.error("Failed to fetch system status", e);
+            setSystemStatus(prev => ({ ...prev, is_online: false }));
+        }
+    };
 
     const handleUploadComplete = () => {
         setRefreshSidebar(prev => prev + 1);
@@ -33,6 +54,7 @@ function App() {
                         refreshTrigger={refreshSidebar}
                         onUploadComplete={handleUploadComplete}
                         onFileDelete={handleFileDelete}
+                        systemStatus={systemStatus}
                     />
                 </div>
             </div>
@@ -43,6 +65,7 @@ function App() {
                     refreshTrigger={refreshSidebar}
                     onUploadComplete={handleUploadComplete}
                     onFileDelete={handleFileDelete}
+                    systemStatus={systemStatus}
                 />
             </div>
 
@@ -82,7 +105,7 @@ function App() {
 
 
 
-                        <Chat ref={chatRef} />
+                        <Chat ref={chatRef} isOnline={systemStatus?.is_online} />
 
                     </div>
                 </div>

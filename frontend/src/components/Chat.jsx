@@ -101,13 +101,13 @@ export const Chat = forwardRef((props, ref) => {
                         type="text"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
-                        placeholder="Ask a question about your document..."
+                        placeholder={props.isOnline === false ? "LLM is disconnected..." : "Ask a question about your document..."}
                         className="w-full bg-muted/50 border-none rounded-full py-3.5 pl-5 pr-12 focus:ring-2 focus:ring-primary/20 transition-all outline-none"
-                        disabled={isLoading}
+                        disabled={isLoading || props.isOnline === false}
                     />
                     <button
                         type="submit"
-                        disabled={!input.trim() || isLoading}
+                        disabled={!input.trim() || isLoading || props.isOnline === false}
                         className="absolute right-2 p-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                     >
                         <Send size={16} />

@@ -29,7 +29,7 @@ A modern, containerized RAG (Retrieval-Augmented Generation) Chat Application. U
 
 1.  **Clone the repository**
     ```bash
-    git clone <repo-url>
+    git clone https://github.com/prat31/hey-docu.git
     cd hey-docu
     ```
 
@@ -85,7 +85,7 @@ graph TD
 
 ## 📝 Usage
 
-1.  **Upload**: Drag and drop a `.txt` file into the upload zone.
+1.  **Upload**: Drag and drop a file into the upload zone.
 2.  **Process**: Watch the status indicator (Uploading → Processing → Success).
 3.  **Chat**: Once processed, type your questions in the chat interface.
 
